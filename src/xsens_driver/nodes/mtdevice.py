@@ -16,7 +16,7 @@ verbose = False
 class MTDevice(object):
 	"""Xsens MT device communication object."""
 
-	def __init__(self, port, baudrate=115200, timeout=0.1, autoconf=True,
+	def __init__(self, port, baudrate=115200, timeout=1, autoconf=True,
 			config_mode=False):
 		"""Open device."""
 		self.device = serial.Serial(port, baudrate, timeout=timeout,
@@ -743,6 +743,7 @@ class MTDevice(object):
 					raise MTException("unknown XDI group: 0x%04X."%group)
 			except struct.error, e:
 				raise MTException("couldn't parse MTData2 message.")
+		#print output
 		return output
 
 	## Parse a legacy MTData message

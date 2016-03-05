@@ -191,7 +191,7 @@ class XSensDriver(object):
 				ss_msg.internal.imu.dv.x = acc_data['Delta v.x']
 				ss_msg.internal.imu.dv.y = acc_data['Delta v.y']
 				ss_msg.internal.imu.dv.z = acc_data['Delta v.z']											
-			elif 'accX' in acc_data: # found acceleration
+			if 'accX' in acc_data: # found acceleration
 				pub_imu = True
 				imu_msg.linear_acceleration.x = acc_data['accX']
 				imu_msg.linear_acceleration.y = acc_data['accY']

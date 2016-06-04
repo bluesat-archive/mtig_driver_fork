@@ -4,6 +4,7 @@ import struct
 
 import sys, getopt, time, glob, math, pdb, numpy
 
+#import mtdef
 from mtdef import MID, MTException, Baudrates, XDIGroup, getName, getMIDName, XDIMessage
 
 # Verbose flag for debugging

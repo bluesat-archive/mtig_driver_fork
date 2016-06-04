@@ -14,6 +14,9 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from custom_msgs.msg import sensorSample, baroSample, gnssSample
 from custom_msgs.msg import positionEstimate, velocityEstimate, orientationEstimate
 
+#new line,
+from mtdef import MID, MTException, Baudrates, XDIGroup, getName, getMIDName, XDIMessage
+
 # transform Euler angles or matrix into quaternions
 from math import pi, radians
 from tf.transformations import quaternion_from_matrix, quaternion_from_euler, identity_matrix
@@ -196,8 +199,8 @@ class XSensDriver(object):
 				imu_msg.linear_acceleration.x = acc_data['accX']
 				imu_msg.linear_acceleration.y = acc_data['accY']
 				imu_msg.linear_acceleration.z = acc_data['accZ']						
-			else:
-				raise MTException("Unsupported message in XDI_AccelerationGroup.")	
+			#else:
+				#raise MTException("Unsupported message in XDI_AccelerationGroup.")	
 					
 		if gyr_data:
 			if 'Delta q0' in gyr_data: # found delta-q's

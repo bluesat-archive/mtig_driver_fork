@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     
     //initialise imu_conversion
     imu_conversion imu;
-
+    ros::init(argc, argv, "imu_conversion");
     //we get angular_velocity and linear_acceleration
     //we want orientation
     if(ros::ok()) {

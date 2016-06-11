@@ -25,6 +25,7 @@ class imu_conversion {
         ros::NodeHandle nh;
         ros::Publisher quatMsgPub; //quaternion msg publisher
         ros::Publisher correctIMU; //publishes the correct IMU
+	ros::Subscriber imuSub;
         ros::Rate r;
         double prev_vals[]; //x,y,z,r,p,y
     

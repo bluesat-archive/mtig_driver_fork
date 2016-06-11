@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
     ros::spin();//NOTE: this blocks untill the end of the program
     //we get angular_velocity and linear_acceleration
     //we want orientation
+    ROS_ERROR("should never reach this part");
     if(ros::ok()) {
         imu.setup_loop();
         imu.main_loop();
@@ -49,7 +50,7 @@ imu_conversion::imu_conversion() : r(50) {
     //ros::Rate r(50);
     quatMsgPub =  nh.advertise<geometry_msgs::Quaternion>("/orientation",10,false);
     correctIMU = nh.advertise<sensor_msgs::Imu>("/imu",10,false);
-    nh.subscribe("mti/sensor/imu", 1, &imu_conversion::imu_callback, this); 
+    imuSub = nh.subscribe("/mti/sensor/imu", 1, &imu_conversion::imu_callback, this); 
 }
 
 void imu_conversion::setup_loop() {
@@ -92,13 +93,13 @@ void imu_conversion::imu_callback(const sensor_msgs::Imu::ConstPtr& msg) {
     
     correctMsg.header = msg->header;
     //getting angular velocity & linear acceleration
-    this->prev_vals[0] = correctMsg.linear_acceleration.x;
+    /*this->prev_vals[0] = correctMsg.linear_acceleration.x;
     this->prev_vals[1] = correctMsg.linear_acceleration.y;
     this->prev_vals[2] = correctMsg.linear_acceleration.z;
 
     this->prev_vals[3] = correctMsg.angular_velocity.x;
     this->prev_vals[4] = correctMsg.angular_velocity.y;
-    this->prev_vals[5] = correctMsg.angular_velocity.z;
+    this->prev_vals[5] = correctMsg.angular_velocity.z;*/
     
     correctIMU.publish<sensor_msgs::Imu>(correctMsg);
 
@@ -126,4 +127,5 @@ static sensor_msgs::Imu flipAxies(sensor_msgs::Imu in) {
     out.linear_acceleration.x = -in.linear_acceleration.x;
     out.linear_acceleration.y = -in.linear_acceleration.y;
     out.linear_acceleration.z = -in.linear_acceleration.z;
+    return out;
 }

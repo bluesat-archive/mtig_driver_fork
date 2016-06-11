@@ -31,10 +31,10 @@ overtime.
 static sensor_msgs::Imu flipAxies(sensor_msgs::Imu in);
 
 int main(int argc, char **argv) {
+    ros::init(argc, argv, "imu_conversion");
     
     //initialise imu_conversion
     imu_conversion imu;
-    ros::init(argc, argv, "imu_conversion");
     //we get angular_velocity and linear_acceleration
     //we want orientation
     if(ros::ok()) {

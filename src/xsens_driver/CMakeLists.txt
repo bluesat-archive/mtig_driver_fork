@@ -5,7 +5,7 @@ project(xsens_driver)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  rospy std_msgs tf sensor_msgs geometry_msgs gps_common diagnostic_msgs custom_msgs
+  rospy roscpp std_msgs tf sensor_msgs geometry_msgs gps_common diagnostic_msgs custom_msgs 
 )
 
 ## System dependencies are found with CMake's conventions
@@ -78,9 +78,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+ INCLUDE_DIRS include
 #  LIBRARIES test_py
-  CATKIN_DEPENDS rospy std_msgs tf sensor_msgs geometry_msgs gps_common diagnostic_msgs custom_msgs
+  CATKIN_DEPENDS rospy roscpp std_msgs tf sensor_msgs geometry_msgs gps_common diagnostic_msgs custom_msgs
 #  DEPENDS system_lib
 )
 
@@ -93,6 +93,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  include
 )
 
 ## Declare a cpp library
@@ -101,16 +102,16 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-# add_executable(test_py_node src/test_py_node.cpp)
+add_executable(imu_conversion src/imu_conversion.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(test_py_node test_py_generate_messages_cpp)
+add_dependencies(imu_conversion xsens_driver_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(test_py_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(imu_conversion
+   ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##

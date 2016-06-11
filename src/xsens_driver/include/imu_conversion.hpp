@@ -19,10 +19,12 @@ class imu_conversion {
         bool new_params;
         void quat_convert();
         void imu_callback(const sensor_msgs::Imu::ConstPtr& msg);
+        
 
     private:
         ros::NodeHandle nh;
         ros::Publisher quatMsgPub; //quaternion msg publisher
+        ros::Publisher correctIMU; //publishes the correct IMU
         ros::Rate r;
         double prev_vals[]; //x,y,z,r,p,y
     

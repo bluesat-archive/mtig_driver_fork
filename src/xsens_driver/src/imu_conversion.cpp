@@ -47,6 +47,7 @@ imu_conversion::imu_conversion() : r(50) {
     new_params = true;
     //ros::Rate r(50);
     quatMsgPub =  nh.advertise<geometry_msgs::Quaternion>("/orientation",10,false);
+    correctIMU = nh.advertise<sensor_msgs::Imu>("/imu",10,false);
     nh.subscribe("mti/sensor/imu", 1, &imu_conversion::imu_callback, this); 
 }
 
@@ -88,6 +89,7 @@ void imu_conversion::imu_callback(const sensor_msgs::Imu::ConstPtr& msg) {
     //flip the axis
     sensor_msgs::Imu correctMsg = flipAxies(*msg);
     
+    correctMsg.header = msg->header;
     //getting angular velocity & linear acceleration
     this->prev_vals[0] = correctMsg.linear_acceleration.x;
     this->prev_vals[1] = correctMsg.linear_acceleration.y;
@@ -96,6 +98,8 @@ void imu_conversion::imu_callback(const sensor_msgs::Imu::ConstPtr& msg) {
     this->prev_vals[3] = correctMsg.angular_velocity.x;
     this->prev_vals[4] = correctMsg.angular_velocity.y;
     this->prev_vals[5] = correctMsg.angular_velocity.z;
+    
+    correctIMU.publish<sensor_msgs::Imu>(correctMsg);
 
     new_params = true;
 }

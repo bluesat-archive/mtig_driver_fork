@@ -127,9 +127,9 @@ target_link_libraries(imu_conversion
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 install(PROGRAMS
-  nodes/mtnode.py
-  nodes/mtdef.py
-  nodes/mtdevice.py
+  src/mtnode.py
+  src/mtdef.py
+  src/mtdevice.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

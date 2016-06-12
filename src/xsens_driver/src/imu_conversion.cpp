@@ -29,6 +29,7 @@ overtime.
 #include <imu_conversion.hpp>
 
 static sensor_msgs::Imu flipAxies(sensor_msgs::Imu in);
+static sensor_msgs::Imu addCovar(sensor_msgs::Imu & in);
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "imu_conversion");
@@ -90,7 +91,7 @@ void imu_conversion::main_loop() {
 void imu_conversion::imu_callback(const sensor_msgs::Imu::ConstPtr& msg) {
     //flip the axis
     sensor_msgs::Imu correctMsg = flipAxies(*msg);
-    
+    correctMsg = addCovar(correctMsg);    
     correctMsg.header = msg->header;
     //getting angular velocity & linear acceleration
     /*this->prev_vals[0] = correctMsg.linear_acceleration.x;
@@ -117,6 +118,31 @@ void imu_conversion::quat_convert() {
 
 void imu_conversion::publish_quat() {
     quatMsgPub.publish(orientation);
+}
+
+
+static sensor_msgs::Imu addCovar(sensor_msgs::Imu & in) {
+    //see comments on OWRS-195 for explanation
+    
+    //TODO: these should be ros params
+    #define ACCEL_NOISE_DENSITY (88.4*1e-6) //gravity/sqrt(Hz)
+    #define RATE_GYRO_NOISE_DENSITY 0.029 //deg/s/sqrt(Hz)
+    #define FREQ 400.0 //this should be the frequency we are reciving messages
+    #define GRAVITY 9.80665
+    
+    //TODO: this should me in (m/s^2)^2 should check that the units work
+    double accelError = pow((ACCEL_NOISE_DENSITY*GRAVITY),2)*FREQ;
+    double gyroError  = pow((RATE_GYRO_NOISE_DENSITY*M_PI),2)/((double)(180*180));
+
+    in.angular_velocity_covariance[0] = in.angular_velocity_covariance[1] =
+        in.angular_velocity_covariance[8] = gyroError;
+    
+    in.linear_acceleration_covariance[0] = in.linear_acceleration_covariance[1] =
+        in.linear_acceleration_covariance[8] = accelError;
+
+    return in;
+   
+
 }
 
 static sensor_msgs::Imu flipAxies(sensor_msgs::Imu in) {

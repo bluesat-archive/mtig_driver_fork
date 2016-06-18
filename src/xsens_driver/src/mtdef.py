@@ -124,7 +124,7 @@ class MID:
 	SetNoRotation = 0x22
 	
 	## Some timeout related stuff
-	additionalTimeOutOffset = 1.016 # 6ms
+	additionalTimeOutOffset = 3.016 # 6ms
 
 
 def getName(cls, value):

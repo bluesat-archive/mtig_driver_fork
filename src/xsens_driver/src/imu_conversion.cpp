@@ -147,11 +147,11 @@ static sensor_msgs::Imu addCovar(sensor_msgs::Imu & in) {
 
 static sensor_msgs::Imu flipAxies(sensor_msgs::Imu in) {
     sensor_msgs::Imu out;
-    out.angular_velocity.x = -in.angular_velocity.x;
-    out.angular_velocity.y = -in.angular_velocity.y;
-    out.angular_velocity.z = -in.angular_velocity.z;
-    out.linear_acceleration.x = -in.linear_acceleration.x;
-    out.linear_acceleration.y = -in.linear_acceleration.y;
-    out.linear_acceleration.z = -in.linear_acceleration.z;
+    out.angular_velocity.x = in.angular_velocity.x;
+    out.angular_velocity.y = in.angular_velocity.y;
+    out.angular_velocity.z = in.angular_velocity.z;
+    out.linear_acceleration.x = in.linear_acceleration.x;
+    out.linear_acceleration.y = in.linear_acceleration.y;
+    out.linear_acceleration.z = in.linear_acceleration.z;
     return out;
 }

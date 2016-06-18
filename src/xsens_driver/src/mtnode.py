@@ -63,7 +63,13 @@ class XSensDriver(object):
 		rospy.loginfo("MT node interface: %s at %d bd."%(device, baudrate))
 		self.mt = mtdevice.MTDevice(device, baudrate)
 
+		#add device config
+	        self.mt.configureMti(400, 2); #set IMU to 400Hz 
+		                         #mode 2 (Gyro and Accelerometer output)	
+
+
 		self.frame_id = get_param('~frame_id', '/mti/data')
+
 
 		frame_local     = get_param('~frame_local'    , 'ENU')
 		frame_local_imu = get_param('~frame_local_imu', 'ENU')

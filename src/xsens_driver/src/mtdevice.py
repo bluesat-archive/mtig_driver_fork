@@ -17,7 +17,7 @@ verbose = False
 class MTDevice(object):
 	"""Xsens MT device communication object."""
 
-	def __init__(self, port, baudrate=115200, timeout=1, autoconf=True,
+	def __init__(self, port, baudrate=115200, timeout=3, autoconf=True,
 			config_mode=False):
 		"""Open device."""
 		self.device = serial.Serial(port, baudrate, timeout=timeout,

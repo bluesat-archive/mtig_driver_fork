@@ -28,6 +28,9 @@ overtime.
 #include <sensor_msgs/Imu.h>
 #include <imu_conversion.hpp>
 
+#define BIAS_TESTING //remove for actual use
+
+
 static sensor_msgs::Imu flipAxies(sensor_msgs::Imu in);
 static sensor_msgs::Imu addCovar(sensor_msgs::Imu & in);
 
@@ -36,19 +39,19 @@ int main(int argc, char **argv) {
     
     //initialise imu_conversion
     imu_conversion imu;
+
+    //calculate initial orientation
+    //calculate gyro bias (drift)
+    imu.setup_loop();
+
     ros::spin();//NOTE: this blocks untill the end of the program
     //we get angular_velocity and linear_acceleration
     //we want orientation
     ROS_ERROR("should never reach this part");
-    if(ros::ok()) {
-        imu.setup_loop();
-        imu.main_loop();
-    }
 }
 
-imu_conversion::imu_conversion() : r(50) {
+imu_conversion::imu_conversion() : is_setup_running(true) {
     new_params = true;
-    //ros::Rate r(50);
     quatMsgPub =  nh.advertise<geometry_msgs::Quaternion>("/orientation",10,false);
     correctIMU = nh.advertise<sensor_msgs::Imu>("/imu",10,false);
     imuSub = nh.subscribe("/mti/sensor/imu", 1, &imu_conversion::imu_callback, this); 
@@ -59,26 +62,36 @@ void imu_conversion::setup_loop() {
     int sampleCount = 0;
     ros::Time setupBegin = ros::Time::now();
     ros::Time cur = setupBegin;
-    while(cur.sec - setupBegin.sec < 15) {
-        r.sleep();
+    while(sampleCount <= 400) { //should run for 15sec
+//#define DEBUG
+#ifdef DEBUG
+        std::cout << "setup_loop" << std::endl;
+        std::cout << "Z: " << prev_vals[2] << std::endl;
+#endif
+        ros::spinOnce();
+        if(sqrt(prev_vals[2]*prev_vals[2] + prev_vals[1]*prev_vals[1] + prev_vals[0]*prev_vals[0]) <= 8) {
+            continue; //ensure "sane" data being transmitted
+        }
         if(new_params) {
             new_params = false;
             for(unsigned int i = 0; i < 6; ++i) {
-                setup_vals[i] += prev_vals[i]; //angular velocities collected for a bias elimination
-                ++sampleCount;
+                setup_vals[i] += prev_vals[i];
             }
+            ++sampleCount;
         }
         cur = ros::Time::now();
     }
     for(unsigned int i = 0 ; i < 6; ++i) {
-        prev_vals[i] = setup_vals[i]/sampleCount;
+        setup_vals[i] = setup_vals[i]/sampleCount;
     }
-    //need to convert to quat
+    bias[0] = setup_vals[3];
+    bias[1] = setup_vals[4];
+    bias[2] = setup_vals[5];
+    is_setup_running = false;
 }
 
-void imu_conversion::main_loop() {
+/*void imu_conversion::main_loop() {
     while(ros::ok()) {    
-        r.sleep();
         if(new_params) {
             new_params = false;
             //update quat and publish (need to talk to jack)
@@ -86,25 +99,40 @@ void imu_conversion::main_loop() {
             publish_quat();    
         }
     }
-}
+}*/
 
 void imu_conversion::imu_callback(const sensor_msgs::Imu::ConstPtr& msg) {
     //flip the axis
+    
+
     sensor_msgs::Imu correctMsg = flipAxies(*msg);
+
+    correctMsg.angular_velocity.x -= bias[0];
+    correctMsg.angular_velocity.y -= bias[1];
+    correctMsg.angular_velocity.z -= bias[2];
+#ifdef DEBUG    
+    if(!is_setup_running) {        
+        std::cout << "roll bias: " << bias[0] << " roll: " << correctMsg.angular_velocity.x << std::endl;
+        std::cout << "pitch bias: " << bias[1] << " pitch: " << correctMsg.angular_velocity.y << std::endl;
+        std::cout << "yaw bias: " << bias[2] << " yaw: " << correctMsg.angular_velocity.z << std::endl;
+    }
+#endif
     correctMsg = addCovar(correctMsg);    
     correctMsg.header = msg->header;
     //getting angular velocity & linear acceleration
-    /*this->prev_vals[0] = correctMsg.linear_acceleration.x;
-    this->prev_vals[1] = correctMsg.linear_acceleration.y;
-    this->prev_vals[2] = correctMsg.linear_acceleration.z;
-
-    this->prev_vals[3] = correctMsg.angular_velocity.x;
-    this->prev_vals[4] = correctMsg.angular_velocity.y;
-    this->prev_vals[5] = correctMsg.angular_velocity.z;*/
-    
-    correctIMU.publish<sensor_msgs::Imu>(correctMsg);
-
+    if(!is_setup_running) {
+        correctIMU.publish<sensor_msgs::Imu>(correctMsg);
+    }
     new_params = true;
+    if(is_setup_running) {
+        prev_vals[0] = msg->linear_acceleration.x;
+        prev_vals[1] = msg->linear_acceleration.y;
+        prev_vals[2] = msg->linear_acceleration.z;
+
+        prev_vals[3] = msg->angular_velocity.x;
+        prev_vals[4] = msg->angular_velocity.y;
+        prev_vals[5] = msg->angular_velocity.z;
+    }
 }
 
 //convert x,y,z,r,p,y velocities accelerations

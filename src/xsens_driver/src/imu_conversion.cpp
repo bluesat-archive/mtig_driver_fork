@@ -121,6 +121,18 @@ void imu_conversion::imu_callback(const sensor_msgs::Imu::ConstPtr& msg) {
     correctMsg.header = msg->header;
     //getting angular velocity & linear acceleration
     if(!is_setup_running) {
+#ifdef REMOVE_NOISE
+        double noise_param = 0.1;
+        if(correctMsg.angular_velocity.x <= noise_param) {
+            correctMsg.angular_velocity.x = 0;
+        }
+        if(correctMsg.angular_velocity.y <= noise_param) {
+            correctMsg.angular_velocity.y = 0;
+        }
+        if(correctMsg.angular_velocity.z <= noise_param) {
+            correctMsg.angular_velocity.z = 0;
+        }
+#endif
         correctIMU.publish<sensor_msgs::Imu>(correctMsg);
     }
     new_params = true;
@@ -160,7 +172,7 @@ static sensor_msgs::Imu addCovar(sensor_msgs::Imu & in) {
     
     //TODO: this should me in (m/s^2)^2 should check that the units work
     double accelError = pow((ACCEL_NOISE_DENSITY*GRAVITY),2)*FREQ;
-    double gyroError  = pow((RATE_GYRO_NOISE_DENSITY*M_PI),2)/((double)(180*180));
+    double gyroError  = pow((RATE_GYRO_NOISE_DENSITY*M_PI),2)/((double)(180*180)) * FREQ;
 
     in.angular_velocity_covariance[0] = in.angular_velocity_covariance[1] =
         in.angular_velocity_covariance[8] = gyroError;
